@@ -108,7 +108,7 @@ export function createApiHandler({
       if (!id || !USER_ID_PATTERN.test(id)) {
         return sendError(res, 400, 'INVALID_USER_ID', '사용자 ID는 숫자만 입력할 수 있습니다.')
       }
-      return sendJson(res, 200, { removed: store.remove(id) })
+      return sendJson(res, 200, { removed: await store.remove(id) })
     }
 
     if (url.pathname !== '/api/user') {

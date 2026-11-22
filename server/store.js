@@ -1,10 +1,9 @@
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
+import { isActive } from './presence.js'
 
-const ACTIVE = new Set(['online', 'in-game', 'studio'])
-
-export const isActive = (status) => ACTIVE.has(status)
+export { isActive }
 
 export function createStore({ file = ':memory:', retentionDays = 30, maxTargets = 200, now = () => Date.now() } = {}) {
   if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true })

@@ -65,6 +65,37 @@ Roblox가 마지막 접속 시간을 주지 않거나 공개되지 않는 사용
   (토큰이 없으면 이 API는 비활성화됩니다.) 다만 삭제 후 해당 사용자를 다시 조회하면 다시 추적됩니다.
 - `data/` 는 `.gitignore` 에 포함되어 있습니다. 서버 외부로 내보내지 않으며, 운영자가 법령/약관을 준수할 책임이 있습니다.
 
+## Cloudflare 배포 (Pages + D1 + Cron)
+
+Cloudflare Pages(GitHub 연동)는 정적 파일만 서빙하므로, API와 수집기는 다음 구조로 동작합니다.
+
+| 구성 | 위치 | 역할 |
+| --- | --- | --- |
+| 페이지 | 루트 `index.html` | 같은 출처의 `/api/*` 를 호출 |
+| API | [functions/api/[[path]].js](./functions/api/%5B%5Bpath%5D%5D.js) (Pages Functions) | 조회 + 추적 등록 + 삭제 API |
+| DB | Cloudflare **D1** (`schema.sql`) | 추적 대상/접속 기록 저장 |
+| 수집기 | [worker/](./worker) (Cron Worker, 5분마다) | 추적 대상 접속 상태 수집 |
+
+### 설정 순서 (한 번만)
+1. D1 생성: `npx wrangler d1 create roblox-last-online` → 출력된 `database_id` 를 메모
+2. 스키마 적용: `npx wrangler d1 execute roblox-last-online --remote --file schema.sql`
+3. **Pages 프로젝트 → Settings → Bindings → D1 database** 에 변수 이름 `DB` 로 위 DB 연결 (Production/Preview)
+4. **Pages → Settings → Variables and Secrets** 에 `ROBLOX_COOKIE`(시크릿), 선택적으로 `ADMIN_TOKEN`(시크릿) 추가 후 재배포
+5. 수집 Worker 배포: [worker/wrangler.toml](./worker/wrangler.toml) 의 `database_id` 를 1번 값으로 교체한 뒤
+   ```bash
+   cd worker
+   npx wrangler secret put ROBLOX_COOKIE
+   npx wrangler deploy
+   ```
+6. GitHub에 푸시하면 Pages가 자동 배포합니다.
+
+확인: `https://<프로젝트>.pages.dev/api/health` 가 `{"ok":true,"presenceConfigured":true}` 를 반환해야 합니다.
+
+- Pages 의 `ROBLOX_COOKIE` 와 Worker 의 `ROBLOX_COOKIE` 는 **둘 다** 설정해야 합니다(조회용 / 수집용).
+- 추적 기록 삭제: `curl -X DELETE -H "Authorization: Bearer $ADMIN_TOKEN" "https://<프로젝트>.pages.dev/api/track?id=<사용자 ID>"`
+- 공개 사이트이므로 Cloudflare 대시보드의 **Security → WAF → Rate limiting** 규칙으로 `/api/*` 를 추가 보호하는 것을 권장합니다. (코드 내 제한은 인스턴스별 메모리 기준이라 보조 수단입니다.)
+- Node 서버(`npm start`)는 Cloudflare 가 아닌 환경(VPS 등)에서 SQLite 파일로 같은 기능을 제공하는 대안입니다.
+
 ## 단일 파일 버전 (`index.html`)
 
 루트의 [index.html](./index.html) 은 빌드 없이 동작하는 **독립 실행형 버전**입니다. CSS/JS가 모두 인라인되어 있고 React 앱과 같은 기능·디자인을 제공합니다.

@@ -12,17 +12,17 @@ export function createTracker({ client, store, intervalMs = 300_000, log = conso
     if (running || now < backoffUntil) return { polled: 0 }
     running = true
     try {
-      const ids = store.listTargetIds()
+      const ids = await store.listTargetIds()
       let polled = 0
       for (let i = 0; i < ids.length; i += BATCH_SIZE) {
         const batch = ids.slice(i, i + BATCH_SIZE)
         const presences = await client.getPresences(batch)
-        for (const [id, presence] of presences) store.record(id, presence)
+        for (const [id, presence] of presences) await store.record(id, presence)
         polled += presences.size
       }
       if (now - lastPrune >= PRUNE_EVERY_MS) {
         lastPrune = now
-        const removed = store.prune()
+        const removed = await store.prune()
         if (removed) log.info(`[tracker] 보관 기간이 지난 기록 ${removed}건 삭제`)
       }
       return { polled }

@@ -1,0 +1,15 @@
+name = "roblox-last-online-tracker"
+main = "index.js"
+compatibility_date = "2025-01-01"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+# Pages 프로젝트와 같은 D1 데이터베이스를 연결한다. database_id 는 `wrangler d1 create` 결과로 교체하세요.
+[[d1_databases]]
+binding = "DB"
+database_name = "roblox-last-online"
+database_id = "REPLACE_WITH_DATABASE_ID"
+
+# 시크릿: `wrangler secret put ROBLOX_COOKIE`
+# 선택 변수: TRACK_INTERVAL_SECONDS, TRACK_RETENTION_DAYS, TRACK_MAX_TARGETS

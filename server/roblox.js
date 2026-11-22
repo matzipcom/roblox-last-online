@@ -1,5 +1,5 @@
 import { TtlCache } from './cache.js'
-import { isActive } from './store.js'
+import { isActive } from './presence.js'
 
 const USERS_API = 'https://users.roblox.com'
 const THUMBNAILS_API = 'https://thumbnails.roblox.com'
@@ -27,7 +27,7 @@ export const USER_ID_PATTERN = /^[1-9]\d{0,14}$/
 
 export function createRobloxClient({
   fetch: fetchImpl = globalThis.fetch,
-  cookie = process.env.ROBLOX_COOKIE,
+  cookie = globalThis.process?.env?.ROBLOX_COOKIE,
   store = null,
 } = {}) {
   const securityCookie = cookie?.trim() || null
@@ -175,13 +175,13 @@ export function createRobloxClient({
   }
 
   // 조회된 사용자를 추적 목록에 넣고, 현재 관찰값을 기록한 뒤, 저장된 기록으로 마지막 접속 시간을 보완한다.
-  function trackAndMerge(userId, name, presence) {
+  async function trackAndMerge(userId, name, presence) {
     if (!store || !securityCookie) return null
-    const tracked = store.track(userId, name)
+    const tracked = await store.track(userId, name)
     if (!tracked) return { enabled: false, reason: 'LIMIT_REACHED' }
 
-    store.record(userId, presence)
-    const info = store.getTracking(userId)
+    await store.record(userId, presence)
+    const info = await store.getTracking(userId)
     if (presence.available && !isActive(presence.status) && !presence.lastOnline && info.lastSeenOnline) {
       presence.lastOnline = info.lastSeenOnline
       presence.lastOnlineSource = 'tracked'
@@ -217,7 +217,7 @@ export function createRobloxClient({
     ])
 
     const source = details ?? basic
-    const tracking = trackAndMerge(userId, source.name, presence)
+    const tracking = await trackAndMerge(userId, source.name, presence)
     return {
       user: {
         id: source.id,
