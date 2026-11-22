@@ -3,7 +3,7 @@ main = "index.js"
 compatibility_date = "2025-01-01"
 
 [triggers]
-crons = ["*/5 * * * *"]
+crons = ["* * * * *"]  # 1분마다 (Cloudflare Cron 의 최소 간격)
 
 # Pages 프로젝트와 같은 D1 데이터베이스를 연결한다. database_id 는 `wrangler d1 create` 결과로 교체하세요.
 [[d1_databases]]
@@ -12,4 +12,4 @@ database_name = "roblox-last-online"
 database_id = "REPLACE_WITH_DATABASE_ID"
 
 # 시크릿: `wrangler secret put ROBLOX_COOKIE`
-# 선택 변수: TRACK_INTERVAL_SECONDS, TRACK_RETENTION_DAYS, TRACK_MAX_TARGETS
+# 선택 변수: TRACK_INTERVAL_SECONDS(실패 후 재시도 대기 시간, 기본 300), TRACK_RETENTION_DAYS, TRACK_MAX_TARGETS

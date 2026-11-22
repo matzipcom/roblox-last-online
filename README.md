@@ -53,7 +53,7 @@ npm run dev                 # http://localhost:5173
 Roblox가 마지막 접속 시간을 주지 않거나 공개되지 않는 사용자를 위해, 서버가 접속 상태를 **주기적으로 수집해 SQLite(`data/presence.db`)에 저장**합니다.
 
 - `ROBLOX_COOKIE` 가 설정되어 있으면, 사이트에서 조회된 사용자가 자동으로 추적 목록에 추가됩니다(최대 `TRACK_MAX_TARGETS`, 기본 200명).
-- 서버는 `TRACK_INTERVAL_SECONDS`(기본 300초)마다 추적 대상 전원의 상태를 100명씩 묶어 한 번에 조회합니다.
+- Node 서버는 `TRACK_INTERVAL_SECONDS`(기본 300초), Cloudflare 는 Cron 주기(1분)마다 추적 대상 전원의 상태를 100명씩 묶어 한 번에 조회합니다.
 - 온라인/게임 중/Studio 상태가 관찰될 때마다 "마지막으로 접속이 관찰된 시각"을 갱신하고, 오프라인이 되면 그 값이 마지막 접속 시간이 됩니다. Roblox가 `lastOnline` 을 직접 주면 그 값을 우선 사용합니다.
 - **한계:** 추적을 시작하기 전의 접속은 알 수 없고, 수집 주기만큼 오차가 있습니다. 처음 조회한 사용자는 접속이 관찰될 때까지 "수집을 시작했습니다"로 표시됩니다.
 - 인증 실패/한도 초과 시 한 주기 동안 수집을 쉬어 호출을 반복하지 않습니다.
@@ -74,7 +74,7 @@ Cloudflare Pages(GitHub 연동)는 정적 파일만 서빙하므로, API와 수�
 | 페이지 | 루트 `index.html` | 같은 출처의 `/api/*` 를 호출 |
 | API | [functions/api/[[path]].js](./functions/api/%5B%5Bpath%5D%5D.js) (Pages Functions) | 조회 + 추적 등록 + 삭제 API |
 | DB | Cloudflare **D1** (`schema.sql`) | 추적 대상/접속 기록 저장 |
-| 수집기 | [worker/](./worker) (Cron Worker, 5분마다) | 추적 대상 접속 상태 수집 |
+| 수집기 | [worker/](./worker) (Cron Worker, 1분마다) | 추적 대상 접속 상태 수집 |
 
 ### 설정 순서 (한 번만)
 1. D1 생성: `npx wrangler d1 create roblox-last-online` → 출력된 `database_id` 를 메모
@@ -91,6 +91,7 @@ Cloudflare Pages(GitHub 연동)는 정적 파일만 서빙하므로, API와 수�
 
 확인: `https://<프로젝트>.pages.dev/api/health` 가 `{"ok":true,"presenceConfigured":true}` 를 반환해야 합니다.
 
+- 수집 주기를 바꾸려면 `worker/wrangler.toml` 의 `crons` 를 수정하고 `npx wrangler deploy` 로 다시 배포하세요. (`*/5 * * * *` = 5분, `* * * * *` = 1분이 최소)
 - Pages 의 `ROBLOX_COOKIE` 와 Worker 의 `ROBLOX_COOKIE` 는 **둘 다** 설정해야 합니다(조회용 / 수집용).
 - 추적 기록 삭제: `curl -X DELETE -H "Authorization: Bearer $ADMIN_TOKEN" "https://<프로젝트>.pages.dev/api/track?id=<사용자 ID>"`
 - 공개 사이트이므로 Cloudflare 대시보드의 **Security → WAF → Rate limiting** 규칙으로 `/api/*` 를 추가 보호하는 것을 권장합니다. (코드 내 제한은 인스턴스별 메모리 기준이라 보조 수단입니다.)
