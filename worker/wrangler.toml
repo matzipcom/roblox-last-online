@@ -9,7 +9,7 @@ crons = ["* * * * *"]  # 1분마다 (Cloudflare Cron 의 최소 간격)
 [[d1_databases]]
 binding = "DB"
 database_name = "roblox-last-online"
-database_id = "REPLACE_WITH_DATABASE_ID"
+database_id = "bf47ae70-9f15-4c0e-a611-02eb9d595248"
 
 # 시크릿: `wrangler secret put ROBLOX_COOKIE`
 # 선택 변수: TRACK_INTERVAL_SECONDS(실패 후 재시도 대기 시간, 기본 300), TRACK_RETENTION_DAYS, TRACK_MAX_TARGETS

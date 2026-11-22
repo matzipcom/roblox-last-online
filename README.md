@@ -81,7 +81,7 @@ Cloudflare Pages(GitHub 연동)는 정적 파일만 서빙하므로, API와 수�
 2. 스키마 적용: `npx wrangler d1 execute roblox-last-online --remote --file schema.sql`
 3. **Pages 프로젝트 → Settings → Bindings → D1 database** 에 변수 이름 `DB` 로 위 DB 연결 (Production/Preview)
 4. **Pages → Settings → Variables and Secrets** 에 `ROBLOX_COOKIE`(시크릿), 선택적으로 `ADMIN_TOKEN`(시크릿) 추가 후 재배포
-5. 수집 Worker 배포: [worker/wrangler.toml](./worker/wrangler.toml) 의 `database_id` 를 1번 값으로 교체한 뒤
+5. 수집 Worker 배포: [worker/wrangler.toml](./worker/wrangler.toml) 의 `database_id` 를 1번 값으로 교체한 뒤(이 저장소에는 이미 반영됨)
    ```bash
    cd worker
    npx wrangler secret put ROBLOX_COOKIE
