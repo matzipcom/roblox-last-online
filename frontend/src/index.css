@@ -80,10 +80,28 @@ input {
 }
 
 .topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
   padding: 20px 20px 0;
+}
+
+.lang__select {
+  padding: 6px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.lang__select:hover {
+  color: var(--text);
+  border-color: #33405a;
 }
 
 .brand {

@@ -1,9 +1,12 @@
+import { useI18n } from '../lib/i18n.js'
+
 export default function RecentSearches({ items, onSelect, onClear }) {
+  const { t } = useI18n()
   if (items.length === 0) return null
 
   return (
-    <section className="recent" aria-label="최근 검색">
-      <h2 className="recent__title">최근 검색</h2>
+    <section className="recent" aria-label={t('recent.title')}>
+      <h2 className="recent__title">{t('recent.title')}</h2>
       <ul className="recent__list">
         {items.map((name) => (
           <li key={name}>
@@ -14,7 +17,7 @@ export default function RecentSearches({ items, onSelect, onClear }) {
         ))}
       </ul>
       <button type="button" className="link-button" onClick={onClear}>
-        지우기
+        {t('recent.clear')}
       </button>
     </section>
   )

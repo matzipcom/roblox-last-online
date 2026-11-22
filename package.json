@@ -11,6 +11,7 @@
     "build": "npm --prefix frontend run build",
     "start": "node server/index.js",
     "test": "node --test \"server/**/*.test.js\"",
-    "lint": "npm --prefix frontend run lint && frontend/node_modules/.bin/oxlint server"
+    "lint": "npm --prefix frontend run lint && frontend/node_modules/.bin/oxlint server",
+    "i18n:sync": "node scripts/sync-i18n.mjs"
   }
 }

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import PresencePanel from './PresencePanel.jsx'
+import { useI18n } from '../lib/i18n.js'
 import { formatDate, formatRelative } from '../lib/time.js'
 
-const VerifiedIcon = () => (
-  <svg className="verified" viewBox="0 0 24 24" role="img" aria-label="인증 배지">
+const VerifiedIcon = ({ label }) => (
+  <svg className="verified" viewBox="0 0 24 24" role="img" aria-label={label}>
     <path
       fill="currentColor"
       d="M12 2l2.4 1.8 3-.1 1 2.8 2.5 1.7-.9 2.9.9 2.9-2.5 1.7-1 2.8-3-.1L12 22l-2.4-1.8-3 .1-1-2.8L3.1 15.8 4 12.9 3.1 10l2.5-1.7 1-2.8 3 .1L12 2zm-1.2 13.2l5.1-5.1-1.2-1.2-3.9 3.9-1.7-1.7-1.2 1.2 2.9 2.9z"
@@ -12,6 +13,7 @@ const VerifiedIcon = () => (
 )
 
 export default function UserCard({ data, now, refreshing, onRefresh }) {
+  const { t, locale } = useI18n()
   const { user, avatarUrl, presence, tracking } = data
   const [copied, setCopied] = useState(false)
 
@@ -36,19 +38,22 @@ export default function UserCard({ data, now, refreshing, onRefresh }) {
         <div className="identity">
           <h2 className="identity__display">
             {user.displayName}
-            {user.hasVerifiedBadge && <VerifiedIcon />}
+            {user.hasVerifiedBadge && <VerifiedIcon label={t('card.verified')} />}
           </h2>
           <p className="identity__name">@{user.name}</p>
           <p className="identity__meta">
-            <span>ID {user.id}</span>
+            <span>{t('card.id', { id: user.id })}</span>
             {user.created && (
               <span>
-                가입 {formatDate(user.created)} ({formatRelative(user.created, now)})
+                {t('card.joined', {
+                  date: formatDate(user.created, locale),
+                  relative: formatRelative(user.created, { locale, justNow: t('time.justNow'), now }),
+                })}
               </span>
             )}
           </p>
         </div>
-        {user.isBanned && <span className="tag tag--danger">정지된 계정</span>}
+        {user.isBanned && <span className="tag tag--danger">{t('card.banned')}</span>}
       </header>
 
       <PresencePanel presence={presence} tracking={tracking} now={now} />
@@ -57,10 +62,10 @@ export default function UserCard({ data, now, refreshing, onRefresh }) {
 
       <footer className="card__actions">
         <button type="button" className="button" onClick={onRefresh} disabled={refreshing}>
-          {refreshing ? '새로고침 중…' : '새로고침'}
+          {refreshing ? t('card.refreshing') : t('card.refresh')}
         </button>
         <button type="button" className="button" onClick={copyLink}>
-          {copied ? '복사됨 ✓' : '링크 복사'}
+          {copied ? t('card.copied') : t('card.copy')}
         </button>
         <a
           className="button"
@@ -68,7 +73,7 @@ export default function UserCard({ data, now, refreshing, onRefresh }) {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Roblox 프로필 ↗
+          {t('card.profile')}
         </a>
       </footer>
     </article>

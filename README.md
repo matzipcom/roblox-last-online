@@ -97,6 +97,18 @@ Cloudflare Pages(GitHub 연동)는 정적 파일만 서빙하므로, API와 수�
 - 공개 사이트이므로 Cloudflare 대시보드의 **Security → WAF → Rate limiting** 규칙으로 `/api/*` 를 추가 보호하는 것을 권장합니다. (코드 내 제한은 인스턴스별 메모리 기준이라 보조 수단입니다.)
 - Node 서버(`npm start`)는 Cloudflare 가 아닌 환경(VPS 등)에서 SQLite 파일로 같은 기능을 제공하는 대안입니다.
 
+## 다국어 (English / 日本語 / 한국어)
+
+- 화면 우측 상단의 언어 선택기로 바꿀 수 있고, 선택은 브라우저에 저장됩니다. 처음 방문하면 브라우저 언어를 따르며, 지원하지 않는 언어는 English 입니다. `?lang=ko` 로 강제할 수도 있습니다.
+- 날짜와 "3시간 전" 같은 상대 시간도 선택한 언어로 표시됩니다.
+- 서버 오류는 오류 코드(`error.code`)로 현재 언어의 메시지에 매핑됩니다. 서버가 주는 `message` 는 한국어이므로 화면에 직접 쓰지 않습니다.
+- 번역 사전은 [frontend/src/lib/messages.js](./frontend/src/lib/messages.js) 한 곳에만 있습니다. 문구를 고친 뒤에는 루트 `index.html` 에 인라인된 사전을 갱신하세요.
+  ```bash
+  npm run i18n:sync
+  ```
+  `npm test` 가 모든 언어의 키/자리표시자 일치와 `index.html` 동기화 여부를 검사합니다.
+- 언어를 추가하려면 `messages.js` 의 `LANGUAGES` 와 `MESSAGES` 에 항목을 추가하고 `npm run i18n:sync` 를 실행하세요.
+
 ## 단일 파일 버전 (`index.html`)
 
 루트의 [index.html](./index.html) 은 빌드 없이 동작하는 **독립 실행형 버전**입니다. CSS/JS가 모두 인라인되어 있고 React 앱과 같은 기능·디자인을 제공합니다.

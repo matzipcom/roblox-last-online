@@ -1,11 +1,13 @@
 import { useId } from 'react'
+import { useI18n } from '../lib/i18n.js'
 
 const MODES = [
-  { value: 'name', label: '사용자 이름', placeholder: '예: builderman', inputMode: 'text' },
-  { value: 'id', label: '사용자 ID', placeholder: '예: 156', inputMode: 'numeric' },
+  { value: 'name', inputMode: 'text', maxLength: 20 },
+  { value: 'id', inputMode: 'numeric', maxLength: 15 },
 ]
 
 export default function SearchForm({ mode, value, error, loading, onModeChange, onValueChange, onSubmit }) {
+  const { t } = useI18n()
   const inputId = useId()
   const errorId = useId()
   const current = MODES.find((m) => m.value === mode)
@@ -20,7 +22,7 @@ export default function SearchForm({ mode, value, error, loading, onModeChange, 
       }}
     >
       <fieldset className="segmented">
-        <legend className="visually-hidden">검색 방식</legend>
+        <legend className="visually-hidden">{t('search.legend')}</legend>
         {MODES.map((m) => (
           <label key={m.value} className="segmented__option">
             <input
@@ -30,23 +32,23 @@ export default function SearchForm({ mode, value, error, loading, onModeChange, 
               checked={mode === m.value}
               onChange={() => onModeChange(m.value)}
             />
-            <span>{m.label}</span>
+            <span>{t(`search.mode.${m.value}`)}</span>
           </label>
         ))}
       </fieldset>
 
       <div className="search__row">
         <label className="visually-hidden" htmlFor={inputId}>
-          {current.label}
+          {t(`search.mode.${mode}`)}
         </label>
         <input
           id={inputId}
           className="search__input"
           type="text"
           value={value}
-          placeholder={current.placeholder}
+          placeholder={t(`search.placeholder.${mode}`)}
           inputMode={current.inputMode}
-          maxLength={mode === 'name' ? 20 : 15}
+          maxLength={current.maxLength}
           autoComplete="off"
           autoCapitalize="none"
           spellCheck={false}
@@ -55,12 +57,12 @@ export default function SearchForm({ mode, value, error, loading, onModeChange, 
           onChange={(event) => onValueChange(event.target.value)}
         />
         <button className="button button--primary" type="submit" disabled={loading}>
-          {loading ? '조회 중…' : '조회'}
+          {loading ? t('search.loading') : t('search.submit')}
         </button>
       </div>
 
       <p id={errorId} className="field-error" role="alert">
-        {error}
+        {error ? t(error) : ''}
       </p>
     </form>
   )

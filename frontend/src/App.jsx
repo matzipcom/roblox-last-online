@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import RecentSearches from './components/RecentSearches.jsx'
 import SearchForm from './components/SearchForm.jsx'
 import UserCard from './components/UserCard.jsx'
+import LanguageSwitcher from './components/LanguageSwitcher.jsx'
 import { validateQuery } from './lib/api.js'
+import { describeError, useI18n } from './lib/i18n.js'
 import { useLookup, useNow, useRecentSearches } from './lib/hooks.js'
 
 function readUrlQuery() {
@@ -28,6 +30,7 @@ function CardSkeleton() {
 }
 
 export default function App() {
+  const { t } = useI18n()
   const [initialQuery] = useState(readUrlQuery)
   const [mode, setMode] = useState(initialQuery?.mode ?? 'name')
   const [value, setValue] = useState(initialQuery?.value ?? '')
@@ -105,14 +108,15 @@ export default function App() {
             <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
             <path d="M12 7v5l3 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          Last Online
+          {t('brand')}
         </span>
+        <LanguageSwitcher />
       </header>
 
       <main className="main">
         <section className="hero">
-          <h1>Roblox 마지막 접속 시간 조회</h1>
-          <p>사용자 이름 또는 ID로 마지막 접속 시간과 현재 접속 상태를 확인하세요.</p>
+          <h1>{t('hero.title')}</h1>
+          <p>{t('hero.subtitle')}</p>
         </section>
 
         <SearchForm
@@ -136,9 +140,9 @@ export default function App() {
           {status === 'error' && (
             <div className="notice notice--error" role="alert">
               <p className="notice__title">
-                {error.code === 'USER_NOT_FOUND' ? '사용자를 찾을 수 없습니다' : '조회하지 못했습니다'}
+                {error.code === 'USER_NOT_FOUND' ? t('error.title.notFound') : t('error.title.generic')}
               </p>
-              <p>{error.message}</p>
+              <p>{describeError(t, error)}</p>
             </div>
           )}
 
@@ -155,7 +159,7 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        Roblox Corporation과 제휴하지 않은 비공식 사이트입니다. 접속 시간은 사용자의 개인정보 설정에 따라 표시되지 않을 수 있습니다.
+        {t('footer.disclaimer')}
       </footer>
     </div>
   )
