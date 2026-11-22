@@ -819,7 +819,8 @@
           if (/\.app\.github\.dev$/.test(hostname)) {
             bases.push(`${protocol}//${hostname.replace(/-\d+\./, '-5173.')}`)
           } else {
-            bases.push(`${protocol}//${hostname}:5173`, `${protocol}//${hostname}:3000`)
+            const hosts = [...new Set([hostname, 'localhost', '127.0.0.1'])]
+            for (const host of hosts) bases.push(`${protocol}//${host}:5173`, `${protocol}//${host}:3000`)
           }
           return bases
         }

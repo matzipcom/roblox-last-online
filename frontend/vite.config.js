@@ -33,4 +33,6 @@ function robloxApi() {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), robloxApi()],
+  // IPv4(127.0.0.1)와 IPv6(::1) 모두에서 접속할 수 있도록 모든 인터페이스에 바인딩한다.
+  server: { host: true },
 })
