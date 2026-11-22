@@ -68,6 +68,7 @@ describe('createRobloxClient.lookup', () => {
     assert.deepEqual(presence, {
       available: true,
       status: 'offline',
+      rawType: 0,
       lastOnline: '2026-11-20T10:00:00.000Z',
       lastLocation: null,
       placeId: null,

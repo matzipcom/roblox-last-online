@@ -132,6 +132,7 @@ export function createRobloxClient({
     return {
       available: true,
       status,
+      rawType: entry.userPresenceType ?? null,
       lastOnline: Number.isNaN(lastOnlineMs) ? null : new Date(lastOnlineMs).toISOString(),
       lastLocation: status === 'in-game' || status === 'studio' ? (entry.lastLocation ?? null) : null,
       placeId: status === 'in-game' ? (entry.placeId ?? null) : null,
