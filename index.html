@@ -813,6 +813,7 @@ const MESSAGES = {
     "presence.unknown": "Unknown",
     "presence.hiddenNote": "The last online time may be hidden by the user's privacy settings.",
     "presence.trackingStarted": "Presence tracking started ({date}). The last online time will be recorded once the user is seen online.",
+    "presence.privacyNote": "Users whose online status is set to private or friends-only may appear as “Offline” or “No record”.",
     "presence.trackedNote": "Time observed by presence tracking. It may be off by up to the polling interval.",
     "presence.unavailable.title": "Presence is temporarily unavailable",
     "presence.unavailable.body": "Please try again later.",
@@ -885,6 +886,7 @@ const MESSAGES = {
     "presence.unknown": "不明",
     "presence.hiddenNote": "ユーザーのプライバシー設定により、最終オンライン時間が非公開の場合があります。",
     "presence.trackingStarted": "オンライン状況の記録を開始しました（{date}）。ユーザーのオンラインが確認されると、最終オンライン時間が記録されます。",
+    "presence.privacyNote": "オンライン状況を非公開または友達のみに設定しているユーザーは、「オフライン」や「記録なし」と表示されることがあります。",
     "presence.trackedNote": "オンライン状況の記録で確認した時刻です。収集間隔ぶんの誤差があります。",
     "presence.unavailable.title": "オンライン状況を一時的に取得できません",
     "presence.unavailable.body": "しばらくしてからもう一度お試しください。",
@@ -957,6 +959,7 @@ const MESSAGES = {
     "presence.unknown": "확인할 수 없음",
     "presence.hiddenNote": "사용자의 개인정보 설정에 따라 마지막 접속 시간이 공개되지 않을 수 있습니다.",
     "presence.trackingStarted": "접속 기록 수집을 시작했습니다({date}). 접속이 관찰되면 마지막 접속 시간이 기록됩니다.",
+    "presence.privacyNote": "접속 상태를 비공개 또는 친구 공개로 설정한 사용자는 \"오프라인\"이나 \"기록 없음\"으로 나올 수 있어요.",
     "presence.trackedNote": "접속 기록 수집으로 확인한 시각입니다. (수집 주기만큼 오차가 있을 수 있습니다)",
     "presence.unavailable.title": "접속 정보를 일시적으로 가져올 수 없습니다",
     "presence.unavailable.body": "잠시 후 다시 시도해 주세요.",
@@ -1302,6 +1305,7 @@ const MESSAGES = {
                   ? t('presence.trackingStarted', { date: formatDateTime(tracking.since) })
                   : t('presence.hiddenNote'),
               }),
+              el('p', { class: 'presence__note', text: t('presence.privacyNote') }),
             ]
           }
 

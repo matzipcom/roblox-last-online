@@ -64,6 +64,7 @@ export default function PresencePanel({ presence, tracking, now }) {
               ? t('presence.trackingStarted', { date: formatDateTime(tracking.since, locale) })
               : t('presence.hiddenNote')}
           </p>
+          <p className="presence__note">{t('presence.privacyNote')}</p>
         </>
       )}
     </div>
