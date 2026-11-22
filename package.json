@@ -1,0 +1,16 @@
+{
+  "name": "roblox-last-online",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "node server/index.js",
+    "test": "node --test \"server/**/*.test.js\"",
+    "lint": "npm --prefix frontend run lint && frontend/node_modules/.bin/oxlint server"
+  }
+}

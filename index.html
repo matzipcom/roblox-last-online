@@ -1,0 +1,1234 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0b0d12" />
+    <meta name="description" content="Roblox 사용자 이름 또는 ID로 마지막 접속 시간과 현재 접속 상태를 조회합니다." />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0d12'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%237c9cff' stroke-width='2.5'/%3E%3Cpath d='M16 10.5v5.5l3.5 2' fill='none' stroke='%237c9cff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E"
+    />
+    <title>Roblox 마지막 접속 시간 조회</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0d12;
+        --bg-glow: #151a2b;
+        --surface: #141821;
+        --surface-2: #1b212d;
+        --border: #262d3c;
+        --text: #e8ebf2;
+        --text-dim: #9aa3b5;
+        --text-faint: #6b7487;
+        --accent: #7c9cff;
+        --accent-strong: #5f82ff;
+        --danger: #ff6b7a;
+        --online: #3ddc97;
+        --ingame: #58b5ff;
+        --studio: #ffb454;
+        --offline: #7d8597;
+        --radius: 14px;
+        --font: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', system-ui, -apple-system,
+          'Segoe UI', sans-serif;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      html {
+        background: var(--bg);
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--font);
+        font-size: 16px;
+        line-height: 1.55;
+        word-break: keep-all;
+        overflow-wrap: break-word;
+        color: var(--text);
+        background: radial-gradient(900px 420px at 50% -80px, var(--bg-glow), transparent 70%), var(--bg);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      button,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      /* Layout */
+      .page {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .topbar {
+        width: 100%;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 20px 20px 0;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        color: var(--accent);
+      }
+
+      .main {
+        width: 100%;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 40px 20px 56px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .hero {
+        text-align: center;
+        margin-bottom: 8px;
+      }
+
+      .hero h1 {
+        font-size: clamp(1.6rem, 4.5vw, 2.2rem);
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+      }
+
+      .hero p {
+        margin-top: 10px;
+        color: var(--text-dim);
+      }
+
+      .footer {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 0 20px 32px;
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--text-faint);
+      }
+
+      /* Search */
+      .search {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .segmented {
+        display: inline-flex;
+        align-self: center;
+        margin: 0;
+        padding: 4px;
+        gap: 4px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+      }
+
+      .segmented__option {
+        position: relative;
+        cursor: pointer;
+      }
+
+      .segmented__option input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .segmented__option span {
+        display: block;
+        padding: 7px 18px;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        color: var(--text-dim);
+        transition: background 0.15s, color 0.15s;
+      }
+
+      .segmented__option input:checked + span {
+        background: var(--accent-strong);
+        color: #fff;
+        font-weight: 600;
+      }
+
+      .segmented__option input:focus-visible + span {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .search__row {
+        display: flex;
+        gap: 10px;
+      }
+
+      .search__input {
+        flex: 1;
+        min-width: 0;
+        padding: 14px 16px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 1.05rem;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+
+      .search__input::placeholder {
+        color: var(--text-faint);
+      }
+
+      .search__input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgb(124 156 255 / 0.2);
+      }
+
+      .search__input[aria-invalid='true'] {
+        border-color: var(--danger);
+      }
+
+      .field-error {
+        min-height: 1.2em;
+        margin-top: -4px;
+        font-size: 0.85rem;
+        color: var(--danger);
+      }
+
+      /* Buttons */
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 16px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text);
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+      }
+
+      .button:hover:not(:disabled) {
+        background: #232b3b;
+        border-color: #33405a;
+      }
+
+      .button:disabled {
+        opacity: 0.6;
+        cursor: progress;
+      }
+
+      .button--primary {
+        padding-inline: 26px;
+        background: var(--accent-strong);
+        border-color: transparent;
+        border-radius: var(--radius);
+        font-size: 1rem;
+        font-weight: 600;
+        color: #fff;
+      }
+
+      .button--primary:hover:not(:disabled) {
+        background: var(--accent);
+        border-color: transparent;
+      }
+
+      .link-button {
+        padding: 0;
+        background: none;
+        border: 0;
+        font-size: 0.8rem;
+        color: var(--text-faint);
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .link-button:hover {
+        color: var(--text-dim);
+      }
+
+      /* Recent searches */
+      .recent {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 10px;
+      }
+
+      .recent__title {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--text-faint);
+      }
+
+      .recent__list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .chip {
+        padding: 4px 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 0.85rem;
+        color: var(--text-dim);
+        cursor: pointer;
+      }
+
+      .chip:hover {
+        color: var(--text);
+        border-color: #33405a;
+      }
+
+      /* Result card */
+      .results {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 22px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 12px 40px rgb(0 0 0 / 0.35);
+      }
+
+      .card[aria-busy='true'] {
+        opacity: 0.75;
+      }
+
+      .card__header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .avatar {
+        flex: none;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--surface-2);
+        border: 2px solid var(--border);
+        object-fit: cover;
+      }
+
+      .identity {
+        flex: 1 1 140px;
+        min-width: 0;
+      }
+
+      .identity__display {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 1.35rem;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+      }
+
+      .verified {
+        flex: none;
+        width: 20px;
+        height: 20px;
+        color: var(--accent);
+      }
+
+      .identity__name {
+        color: var(--text-dim);
+      }
+
+      .identity__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px 14px;
+        margin-top: 4px;
+        font-size: 0.82rem;
+        color: var(--text-faint);
+      }
+
+      .tag {
+        align-self: flex-start;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      .tag--danger {
+        background: rgb(255 107 122 / 0.14);
+        color: var(--danger);
+      }
+
+      /* Presence */
+      .presence {
+        position: relative;
+        padding: 18px 20px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--offline);
+        border-radius: 12px;
+      }
+
+      .presence--online {
+        border-left-color: var(--online);
+      }
+
+      .presence--ingame {
+        border-left-color: var(--ingame);
+      }
+
+      .presence--studio,
+      .presence--unavailable {
+        border-left-color: var(--studio);
+      }
+
+      .presence__top {
+        position: absolute;
+        top: 16px;
+        right: 18px;
+      }
+
+      .presence__label {
+        font-size: 0.8rem;
+        color: var(--text-faint);
+      }
+
+      .presence__headline {
+        margin-top: 2px;
+        font-size: 1.7rem;
+        font-weight: 700;
+        line-height: 1.3;
+        letter-spacing: -0.02em;
+      }
+
+      .presence--unavailable .presence__headline {
+        font-size: 1.1rem;
+      }
+
+      .presence__note {
+        margin-top: 4px;
+        font-size: 0.9rem;
+        color: var(--text-dim);
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 4px 12px 4px 10px;
+        border-radius: 999px;
+        background: rgb(125 133 151 / 0.14);
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--offline);
+      }
+
+      .status__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+
+      .status--online {
+        background: rgb(61 220 151 / 0.14);
+        color: var(--online);
+      }
+
+      .status--ingame {
+        background: rgb(88 181 255 / 0.14);
+        color: var(--ingame);
+      }
+
+      .status--studio {
+        background: rgb(255 180 84 / 0.14);
+        color: var(--studio);
+      }
+
+      .status--online .status__dot,
+      .status--ingame .status__dot,
+      .status--studio .status__dot {
+        animation: pulse 1.8s ease-in-out infinite;
+      }
+
+      .bio {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-size: 0.9rem;
+        color: var(--text-dim);
+        white-space: pre-line;
+        overflow-wrap: anywhere;
+      }
+
+      .card__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      /* Notices */
+      .notice {
+        padding: 16px 18px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text-dim);
+      }
+
+      .notice--error {
+        border-color: rgb(255 107 122 / 0.4);
+        background: rgb(255 107 122 / 0.07);
+      }
+
+      .notice__title {
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      /* Skeleton */
+      .skeleton {
+        background: linear-gradient(90deg, var(--surface-2) 25%, #232b3b 50%, var(--surface-2) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s linear infinite;
+        border-radius: 8px;
+      }
+
+      .avatar.skeleton {
+        border: 0;
+        border-radius: 50%;
+      }
+
+      .skeleton--line {
+        height: 16px;
+        margin-bottom: 10px;
+      }
+
+      .skeleton--w60 {
+        width: 60%;
+      }
+
+      .skeleton--w40 {
+        width: 40%;
+      }
+
+      .skeleton--block {
+        height: 110px;
+        border-radius: 12px;
+      }
+
+      @keyframes shimmer {
+        to {
+          background-position: -200% 0;
+        }
+      }
+
+      @keyframes pulse {
+        50% {
+          opacity: 0.35;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .main {
+          padding-top: 28px;
+        }
+
+        .search__row {
+          flex-direction: column;
+        }
+
+        .button--primary {
+          padding-block: 13px;
+        }
+
+        .card {
+          padding: 18px;
+        }
+
+        .card__header {
+          flex-wrap: wrap;
+        }
+
+        .presence__top {
+          position: static;
+          margin-bottom: 8px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <span class="brand">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
+            <path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          Last Online
+        </span>
+      </header>
+
+      <main class="main">
+        <section class="hero">
+          <h1>Roblox 마지막 접속 시간 조회</h1>
+          <p>사용자 이름 또는 ID로 마지막 접속 시간과 현재 접속 상태를 확인하세요.</p>
+        </section>
+
+        <form class="search" id="form" novalidate>
+          <fieldset class="segmented">
+            <legend class="visually-hidden">검색 방식</legend>
+            <label class="segmented__option">
+              <input type="radio" name="mode" value="name" checked />
+              <span>사용자 이름</span>
+            </label>
+            <label class="segmented__option">
+              <input type="radio" name="mode" value="id" />
+              <span>사용자 ID</span>
+            </label>
+          </fieldset>
+
+          <div class="search__row">
+            <label class="visually-hidden" for="query" id="query-label">사용자 이름</label>
+            <input
+              id="query"
+              class="search__input"
+              type="text"
+              placeholder="예: builderman"
+              maxlength="20"
+              autocomplete="off"
+              autocapitalize="none"
+              spellcheck="false"
+              aria-invalid="false"
+            />
+            <button class="button button--primary" type="submit" id="submit">조회</button>
+          </div>
+
+          <p class="field-error" id="field-error" role="alert"></p>
+        </form>
+
+        <section class="recent" id="recent" aria-label="최근 검색" hidden>
+          <h2 class="recent__title">최근 검색</h2>
+          <ul class="recent__list" id="recent-list"></ul>
+          <button type="button" class="link-button" id="recent-clear">지우기</button>
+        </section>
+
+        <div class="results" id="results" aria-live="polite">
+          <noscript>
+            <div class="notice notice--error">이 페이지는 JavaScript가 활성화되어 있어야 동작합니다.</div>
+          </noscript>
+        </div>
+      </main>
+
+      <footer class="footer">
+        Roblox Corporation과 제휴하지 않은 비공식 사이트입니다. 접속 시간은 사용자의 개인정보 설정에 따라 표시되지 않을 수
+        있습니다.
+      </footer>
+    </div>
+
+    <script>
+      // 빌드 없이 동작하는 단일 파일 버전. 같은 출처의 `/api/user` (server/) 를 호출한다.
+      ;(() => {
+        'use strict'
+
+        const USERNAME_PATTERN = /^[A-Za-z0-9_]{3,20}$/
+        const USER_ID_PATTERN = /^[1-9]\d{0,14}$/
+        const STORAGE_KEY = 'rlo:recent'
+        const MAX_RECENT = 6
+
+        const MODES = {
+          name: { label: '사용자 이름', placeholder: '예: builderman', inputMode: 'text', maxLength: 20 },
+          id: { label: '사용자 ID', placeholder: '예: 156', inputMode: 'numeric', maxLength: 15 },
+        }
+
+        const STATUS = {
+          online: { label: '온라인', tone: 'online', detail: 'Roblox에 접속해 있습니다.' },
+          'in-game': { label: '게임 중', tone: 'ingame', detail: '지금 게임을 플레이하고 있습니다.' },
+          studio: { label: 'Studio 작업 중', tone: 'studio', detail: 'Roblox Studio에서 작업하고 있습니다.' },
+          offline: { label: '오프라인', tone: 'offline', detail: null },
+          invisible: { label: '상태 숨김', tone: 'offline', detail: '접속 상태를 숨기고 있습니다.' },
+        }
+
+        const UNAVAILABLE = {
+          NO_AUTH: {
+            title: '접속 정보를 조회할 수 없습니다',
+            body: '이 서버에는 접속 정보 조회용 Roblox 계정이 설정되어 있지 않습니다. 관리자는 README의 설정 방법을 참고해 주세요.',
+          },
+          AUTH_FAILED: {
+            title: '서버의 Roblox 인증이 만료되었습니다',
+            body: '관리자가 ROBLOX_COOKIE 를 갱신해야 접속 정보를 조회할 수 있습니다.',
+          },
+          RATE_LIMITED: { title: 'Roblox 요청 한도를 초과했습니다', body: '잠시 후 다시 조회해 주세요.' },
+        }
+        const UNAVAILABLE_FALLBACK = {
+          title: '접속 정보를 일시적으로 가져올 수 없습니다',
+          body: '잠시 후 다시 시도해 주세요.',
+        }
+
+        const VERIFIED_SVG =
+          '<svg class="verified" viewBox="0 0 24 24" role="img" aria-label="인증 배지"><path fill="currentColor" d="M12 2l2.4 1.8 3-.1 1 2.8 2.5 1.7-.9 2.9.9 2.9-2.5 1.7-1 2.8-3-.1L12 22l-2.4-1.8-3 .1-1-2.8L3.1 15.8 4 12.9 3.1 10l2.5-1.7 1-2.8 3 .1L12 2zm-1.2 13.2l5.1-5.1-1.2-1.2-3.9 3.9-1.7-1.7-1.2 1.2 2.9 2.9z"/></svg>'
+
+        // ---- 시간 포맷 -------------------------------------------------------
+        const relativeFormat = new Intl.RelativeTimeFormat('ko', { numeric: 'auto' })
+        const dateTimeFormat = new Intl.DateTimeFormat('ko-KR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          weekday: 'short',
+          hour: 'numeric',
+          minute: '2-digit',
+          timeZoneName: 'short',
+        })
+        const dateFormat = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+        const UNITS = [
+          ['year', 365 * 24 * 3600],
+          ['month', 30 * 24 * 3600],
+          ['day', 24 * 3600],
+          ['hour', 3600],
+          ['minute', 60],
+        ]
+
+        function formatRelative(iso) {
+          const diffSec = Math.trunc((Date.parse(iso) - Date.now()) / 1000)
+          const abs = Math.abs(diffSec)
+          if (abs < 60) return '방금 전'
+          const [unit, seconds] = UNITS.find(([, s]) => abs >= s)
+          return relativeFormat.format(Math.trunc(diffSec / seconds), unit)
+        }
+        const formatDateTime = (iso) => dateTimeFormat.format(new Date(iso))
+        const formatDate = (iso) => dateFormat.format(new Date(iso))
+
+        // ---- DOM 헬퍼 (서버 응답은 항상 textContent 로만 삽입한다) ------------
+        const $ = (id) => document.getElementById(id)
+
+        function el(tag, props = {}, ...children) {
+          const node = document.createElement(tag)
+          for (const [key, value] of Object.entries(props)) {
+            if (value == null || value === false) continue
+            if (key === 'class') node.className = value
+            else if (key === 'text') node.textContent = value
+            else if (key.startsWith('on')) node.addEventListener(key.slice(2), value)
+            else node.setAttribute(key, value === true ? '' : value)
+          }
+          node.append(...children.filter((child) => child != null && child !== false))
+          return node
+        }
+
+        const relativeSpan = (iso) => el('span', { 'data-rel': iso, text: formatRelative(iso) })
+
+        function safeAvatarUrl(value) {
+          try {
+            const url = new URL(value)
+            return url.protocol === 'https:' && url.hostname.endsWith('.rbxcdn.com') ? url.href : null
+          } catch {
+            return null
+          }
+        }
+
+        // ---- API -------------------------------------------------------------
+        class LookupError extends Error {
+          constructor(code, message) {
+            super(message)
+            this.code = code
+          }
+        }
+
+        function validateQuery(mode, value) {
+          if (!value) return mode === 'name' ? '사용자 이름을 입력해 주세요.' : '사용자 ID를 입력해 주세요.'
+          if (mode === 'name' && !USERNAME_PATTERN.test(value)) {
+            return '사용자 이름은 영문, 숫자, 밑줄(_)로 이루어진 3~20자여야 합니다.'
+          }
+          if (mode === 'id' && !USER_ID_PATTERN.test(value)) return '사용자 ID는 숫자만 입력할 수 있습니다.'
+          return null
+        }
+
+        // 같은 출처에 /api 가 없으면(예: Live Server) 개발 서버(5173)를 찾아 사용한다.
+        let apiBasePromise = null
+
+        function candidateBases() {
+          const { protocol, hostname } = window.location
+          const bases = ['']
+          if (/\.app\.github\.dev$/.test(hostname)) {
+            bases.push(`${protocol}//${hostname.replace(/-\d+\./, '-5173.')}`)
+          } else {
+            bases.push(`${protocol}//${hostname}:5173`, `${protocol}//${hostname}:3000`)
+          }
+          return bases
+        }
+
+        async function probe(base) {
+          try {
+            const res = await fetch(`${base}/api/health`, { credentials: base ? 'include' : 'same-origin' })
+            const body = await res.json()
+            return res.ok && body.ok === true
+          } catch {
+            return false
+          }
+        }
+
+        function resolveApiBase() {
+          apiBasePromise ??= (async () => {
+            for (const base of candidateBases()) if (await probe(base)) return base
+            apiBasePromise = null
+            return null
+          })()
+          return apiBasePromise
+        }
+
+        async function fetchUser({ mode, value }, signal) {
+          const base = await resolveApiBase()
+          if (base === null) {
+            throw new LookupError(
+              'API_UNREACHABLE',
+              'API 서버를 찾을 수 없습니다. 터미널에서 `npm run dev` 를 실행했는지 확인해 주세요. Codespaces 라면 포트 탭에서 5173 포트의 공개 범위를 Public 으로 바꿔야 할 수 있습니다.',
+            )
+          }
+          let response
+          try {
+            response = await fetch(`${base}/api/user?${new URLSearchParams({ [mode]: value })}`, {
+              signal,
+              credentials: base ? 'include' : 'same-origin',
+            })
+          } catch (err) {
+            if (err.name === 'AbortError') throw err
+            throw new LookupError('NETWORK', '서버에 연결할 수 없습니다. 네트워크 상태를 확인해 주세요.')
+          }
+          const body = await response.json().catch(() => null)
+          if (!body) {
+            throw new LookupError('API_UNREACHABLE', `API 응답을 해석할 수 없습니다 (HTTP ${response.status}).`)
+          }
+          if (!response.ok) {
+            throw new LookupError(body.error?.code ?? 'UNKNOWN', body.error?.message ?? '조회 중 오류가 발생했습니다.')
+          }
+          return body
+        }
+
+        // ---- 상태 ------------------------------------------------------------
+        const form = $('form')
+        const input = $('query')
+        const submitButton = $('submit')
+        const fieldError = $('field-error')
+        const results = $('results')
+        const recentBox = $('recent')
+        const recentList = $('recent-list')
+
+        const state = { mode: 'name', status: 'idle', data: null, error: null, controller: null }
+        let recent = readRecent()
+
+        function readRecent() {
+          try {
+            const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY))
+            return Array.isArray(parsed) ? parsed.filter((name) => typeof name === 'string') : []
+          } catch {
+            return []
+          }
+        }
+
+        function writeRecent() {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(recent))
+          } catch {
+            // 저장소를 쓸 수 없는 환경에서는 메모리에서만 유지한다.
+          }
+        }
+
+        function addRecent(name) {
+          recent = [name, ...recent.filter((n) => n.toLowerCase() !== name.toLowerCase())].slice(0, MAX_RECENT)
+          writeRecent()
+          renderRecent()
+        }
+
+        // ---- 렌더링 ----------------------------------------------------------
+        function renderRecent() {
+          recentList.replaceChildren(
+            ...recent.map((name) =>
+              el(
+                'li',
+                {},
+                el('button', {
+                  type: 'button',
+                  class: 'chip',
+                  text: name,
+                  onclick: () => {
+                    applyMode('name')
+                    input.value = name
+                    search({ mode: 'name', value: name })
+                  },
+                }),
+              ),
+            ),
+          )
+          recentBox.hidden = recent.length === 0
+        }
+
+        function skeleton() {
+          return el(
+            'div',
+            { class: 'card card--skeleton', 'aria-hidden': 'true' },
+            el(
+              'div',
+              { class: 'card__header' },
+              el('div', { class: 'avatar skeleton' }),
+              el(
+                'div',
+                { class: 'identity' },
+                el('div', { class: 'skeleton skeleton--line skeleton--w60' }),
+                el('div', { class: 'skeleton skeleton--line skeleton--w40' }),
+              ),
+            ),
+            el('div', { class: 'skeleton skeleton--block' }),
+          )
+        }
+
+        function errorNotice(error) {
+          return el(
+            'div',
+            { class: 'notice notice--error', role: 'alert' },
+            el('p', {
+              class: 'notice__title',
+              text: error.code === 'USER_NOT_FOUND' ? '사용자를 찾을 수 없습니다' : '조회하지 못했습니다',
+            }),
+            el('p', { text: error.message }),
+          )
+        }
+
+        function presencePanel(presence, tracking) {
+          if (!presence.available) {
+            const { title, body } = UNAVAILABLE[presence.reason] ?? UNAVAILABLE_FALLBACK
+            return el(
+              'div',
+              { class: 'presence presence--unavailable' },
+              el('p', { class: 'presence__headline', text: title }),
+              el('p', { class: 'presence__note', text: body }),
+            )
+          }
+
+          const status = STATUS[presence.status] ?? STATUS.offline
+          const isActive = ['online', 'in-game', 'studio'].includes(presence.status)
+
+          let body
+          if (isActive) {
+            body = [
+              el('p', { class: 'presence__headline', text: '지금 접속 중' }),
+              el('p', {
+                class: 'presence__note',
+                text: status.detail + (presence.lastLocation ? ` (${presence.lastLocation})` : ''),
+              }),
+            ]
+          } else if (presence.lastOnline) {
+            body = [
+              el('p', { class: 'presence__headline' }, relativeSpan(presence.lastOnline)),
+              el(
+                'p',
+                { class: 'presence__note' },
+                el('time', { datetime: presence.lastOnline, text: formatDateTime(presence.lastOnline) }),
+              ),
+              presence.lastOnlineSource === 'tracked' &&
+                el('p', {
+                  class: 'presence__note',
+                  text: '접속 기록 수집으로 확인한 시각입니다. (수집 주기만큼 오차가 있을 수 있습니다)',
+                }),
+              status.detail && el('p', { class: 'presence__note', text: status.detail }),
+            ]
+          } else {
+            body = [
+              el('p', { class: 'presence__headline', text: '확인할 수 없음' }),
+              el('p', {
+                class: 'presence__note',
+                text: tracking?.enabled
+                  ? `접속 기록 수집을 시작했습니다(${formatDateTime(tracking.since)}). 접속이 관찰되면 마지막 접속 시간이 기록됩니다.`
+                  : '사용자의 개인정보 설정에 따라 마지막 접속 시간이 공개되지 않을 수 있습니다.',
+              }),
+            ]
+          }
+
+          return el(
+            'div',
+            { class: `presence presence--${status.tone}` },
+            el(
+              'div',
+              { class: 'presence__top' },
+              el(
+                'span',
+                { class: `status status--${status.tone}` },
+                el('span', { class: 'status__dot', 'aria-hidden': 'true' }),
+                status.label,
+              ),
+            ),
+            el('p', { class: 'presence__label', text: isActive ? '현재 상태' : '마지막 접속' }),
+            ...body,
+          )
+        }
+
+        function userCard(data, refreshing) {
+          const { user, presence, tracking } = data
+          const avatarUrl = data.avatarUrl && safeAvatarUrl(data.avatarUrl)
+
+          const displayName = el('h2', { class: 'identity__display' }, el('span', { text: user.displayName }))
+          if (user.hasVerifiedBadge) displayName.insertAdjacentHTML('beforeend', VERIFIED_SVG)
+
+          const copyButton = el('button', { type: 'button', class: 'button', text: '링크 복사' })
+          copyButton.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(window.location.href)
+              copyButton.textContent = '복사됨 ✓'
+              setTimeout(() => (copyButton.textContent = '링크 복사'), 1800)
+            } catch {
+              // 클립보드 접근이 불가능한 환경(비보안 컨텍스트 등)에서는 조용히 무시한다.
+            }
+          })
+
+          return el(
+            'article',
+            { class: 'card', 'aria-busy': String(refreshing) },
+            el(
+              'header',
+              { class: 'card__header' },
+              avatarUrl
+                ? el('img', {
+                    class: 'avatar',
+                    src: avatarUrl,
+                    alt: '',
+                    width: '96',
+                    height: '96',
+                    referrerpolicy: 'no-referrer',
+                  })
+                : el('div', { class: 'avatar', 'aria-hidden': 'true' }),
+              el(
+                'div',
+                { class: 'identity' },
+                displayName,
+                el('p', { class: 'identity__name', text: `@${user.name}` }),
+                el(
+                  'p',
+                  { class: 'identity__meta' },
+                  el('span', { text: `ID ${user.id}` }),
+                  user.created &&
+                    el('span', {}, `가입 ${formatDate(user.created)} (`, relativeSpan(user.created), ')'),
+                ),
+              ),
+              user.isBanned && el('span', { class: 'tag tag--danger', text: '정지된 계정' }),
+            ),
+            presencePanel(presence, tracking),
+            user.description && el('p', { class: 'bio', text: user.description }),
+            el(
+              'footer',
+              { class: 'card__actions' },
+              el('button', {
+                type: 'button',
+                class: 'button',
+                text: refreshing ? '새로고침 중…' : '새로고침',
+                disabled: refreshing,
+                onclick: () => lookup({ mode: 'id', value: String(user.id) }, { keepData: true, remember: false }),
+              }),
+              copyButton,
+              el('a', {
+                class: 'button',
+                href: `https://www.roblox.com/users/${encodeURIComponent(user.id)}/profile`,
+                target: '_blank',
+                rel: 'noopener noreferrer',
+                text: 'Roblox 프로필 ↗',
+              }),
+            ),
+          )
+        }
+
+        function render() {
+          const loading = state.status === 'loading'
+          const refreshing = loading && state.data !== null
+
+          results.replaceChildren(
+            ...[
+              loading && !refreshing && skeleton(),
+              state.status === 'error' && errorNotice(state.error),
+              state.data && userCard(state.data, refreshing),
+            ].filter(Boolean),
+          )
+          submitButton.disabled = loading
+          submitButton.textContent = loading ? '조회 중…' : '조회'
+        }
+
+        // ---- 동작 ------------------------------------------------------------
+        function applyMode(mode) {
+          const config = MODES[mode]
+          state.mode = mode
+          form.elements.mode.value = mode
+          $('query-label').textContent = config.label
+          input.placeholder = config.placeholder
+          input.inputMode = config.inputMode
+          input.maxLength = config.maxLength
+        }
+
+        function showFieldError(message) {
+          fieldError.textContent = message ?? ''
+          input.setAttribute('aria-invalid', String(Boolean(message)))
+          if (message) input.setAttribute('aria-describedby', 'field-error')
+          else input.removeAttribute('aria-describedby')
+        }
+
+        async function lookup(query, { keepData = false, remember = true } = {}) {
+          state.controller?.abort()
+          const controller = new AbortController()
+          state.controller = controller
+
+          state.status = 'loading'
+          state.error = null
+          if (!keepData) state.data = null
+          render()
+
+          try {
+            const data = await fetchUser(query, controller.signal)
+            state.status = 'success'
+            state.data = data
+            if (remember) addRecent(data.user.name)
+          } catch (err) {
+            if (err.name === 'AbortError') return
+            state.status = 'error'
+            state.data = null
+            state.error = err
+          }
+          render()
+        }
+
+        function search(query, { push = true } = {}) {
+          const message = validateQuery(query.mode, query.value)
+          showFieldError(message)
+          if (message) return
+
+          if (push) {
+            window.history.pushState(null, '', `?${new URLSearchParams({ [query.mode]: query.value })}`)
+          }
+          return lookup(query)
+        }
+
+        function readUrlQuery() {
+          const params = new URLSearchParams(window.location.search)
+          if (params.get('name')) return { mode: 'name', value: params.get('name') }
+          if (params.get('id')) return { mode: 'id', value: params.get('id') }
+          return null
+        }
+
+        form.addEventListener('submit', (event) => {
+          event.preventDefault()
+          search({ mode: state.mode, value: input.value.trim() })
+        })
+
+        form.elements.mode.forEach((radio) =>
+          radio.addEventListener('change', () => {
+            applyMode(radio.value)
+            input.value = ''
+            showFieldError(null)
+          }),
+        )
+
+        input.addEventListener('input', () => {
+          if (input.getAttribute('aria-invalid') === 'true') showFieldError(null)
+        })
+
+        $('recent-clear').addEventListener('click', () => {
+          recent = []
+          writeRecent()
+          renderRecent()
+        })
+
+        window.addEventListener('popstate', () => {
+          const query = readUrlQuery()
+          if (query) {
+            applyMode(query.mode)
+            input.value = query.value
+            search(query, { push: false })
+          } else {
+            state.controller?.abort()
+            Object.assign(state, { status: 'idle', data: null, error: null })
+            input.value = ''
+            showFieldError(null)
+            render()
+          }
+        })
+
+        // 상대 시간("3시간 전")을 주기적으로 갱신한다.
+        setInterval(() => {
+          for (const node of document.querySelectorAll('[data-rel]')) {
+            node.textContent = formatRelative(node.dataset.rel)
+          }
+        }, 30_000)
+
+        renderRecent()
+        const initial = readUrlQuery()
+        applyMode(initial?.mode ?? 'name')
+        if (initial) {
+          input.value = initial.value
+          search(initial, { push: false })
+        }
+      })()
+    </script>
+  </body>
+</html>
